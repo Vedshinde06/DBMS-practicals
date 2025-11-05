@@ -1,0 +1,168 @@
+Design and Develop MongoDB Queries using CRUD operations: 
+Create Employee collection by considering following Fields: 
+i. Emp_id : Number 
+ii. Name: Embedded Doc (FName, LName) 
+iii. Company Name: String 
+iv. Salary: Number 
+v. Designation: String 
+vi. Age: Number 
+vii. Expertise: Array 
+viii. DOB: String or Date 
+ix. Email id: String 
+x. Contact: String 
+xi. Address: Array of Embedded Doc (PAddr, LAddr) 
+Insert at least 5 documents in collection by considering above 
+attribute and execute following queries: 
+1. Creates a new document if no document in the employee collection 
+contains 
+{Designation: "Tester", Company_name: "TCS", Age: 25} 
+2. Finds all employees working with Company_name: "TCS" and 
+increase their salary by 2000. 
+3. Matches all documents where the value of the field Address is an 
+embedded document that contains only the field city with the 
+value "Pune" and the field Pin_code with the value "411001". 
+4. Find employee details who are working as "Developer" or 
+"Tester". 
+5. Drop Single documents where designation="Developer". 
+6. Count number of documents in employee collection. 
+
+
+use companyDB
+
+
+db.employee.insertMany([
+  {
+    Emp_id: 101,
+    Name: { FName: "Vedant", LName: "Shinde" },
+    Company_name: "Infosys",
+    Salary: 55000,
+    Designation: "Developer",
+    Age: 24,
+    Expertise: ["Python", "MongoDB", "React"],
+    DOB: ISODate("2001-06-10"),
+    Email: "vedant.shinde@gmail.com",
+    Contact: "9876543210",
+    Address: [
+      { city: "Pune", Pin_code: "411001", PAddr: "Pune", LAddr: "Mumbai" }
+    ]
+  },
+  {
+    Emp_id: 102,
+    Name: { FName: "Neha", LName: "Patil" },
+    Company_name: "TCS",
+    Salary: 48000,
+    Designation: "Tester",
+    Age: 25,
+    Expertise: ["MongoDB", "MySQL", "Cassandra"],
+    DOB: ISODate("2000-09-20"),
+    Email: "neha.patil@tcs.com",
+    Contact: "9765432189",
+    Address: [
+      { city: "Mumbai", Pin_code: "400001", PAddr: "Nashik", LAddr: "Pune" }
+    ]
+  },
+  {
+    Emp_id: 103,
+    Name: { FName: "Amit", LName: "Joshi" },
+    Company_name: "Infosys",
+    Salary: 42000,
+    Designation: "Programmer",
+    Age: 28,
+    Expertise: ["Java", "MongoDB", "NodeJS"],
+    DOB: ISODate("1998-03-11"),
+    Email: "amit.joshi@infosys.com",
+    Contact: "9123456789",
+    Address: [
+      { city: "Bangalore", Pin_code: "560001", PAddr: "Pune", LAddr: "Bangalore" }
+    ]
+  },
+  {
+    Emp_id: 104,
+    Name: { FName: "Sneha", LName: "Desai" },
+    Company_name: "Wipro",
+    Salary: 32000,
+    Designation: "Developer",
+    Age: 31,
+    Expertise: ["MongoDB", "Angular", "NodeJS"],
+    DOB: ISODate("1999-12-05"),
+    Email: "sneha.desai@wipro.com",
+    Contact: "9090909090",
+    Address: [
+      { city: "Pune", Pin_code: "411001", PAddr: "Mumbai", LAddr: "Mumbai" }
+    ]
+  },
+  {
+    Emp_id: 105,
+    Name: { FName: "Rohit", LName: "Kale" },
+    Company_name: "TCS",
+    Salary: 65000,
+    Designation: "Programmer",
+    Age: 30,
+    Expertise: ["MongoDB", "MySQL", "Cassandra"],
+    DOB: ISODate("1995-01-22"),
+    Email: "rohit.kale@tcs.com",
+    Contact: "9988776655",
+    Address: [
+      { city: "Delhi", Pin_code: "110001", PAddr: "Pune", LAddr: "Delhi" }
+    ]
+  }
+])
+
+
+
+1)
+
+db.employee.updateOne(
+  { Designation: "Tester", Company_name: "TCS", Age: 25 },
+  {
+    $setOnInsert: {
+      Emp_id: 106,
+      Name: { FName: "New", LName: "Tester" },
+      Salary: 30000,
+      Expertise: ["Testing", "Automation"],
+      DOB: ISODate("2001-01-01"),
+      Email: "new.tester@tcs.com",
+      Contact: "9999999999",
+      Address: [{ city: "Pune", Pin_code: "411001", PAddr: "Pune", LAddr: "Mumbai" }]
+    }
+  },
+  { upsert: true }
+)
+
+
+2)
+
+db.employee.updateMany(
+  { Company_name: "TCS" },
+  { $inc: { Salary: 2000 } }
+)
+
+
+3)
+
+
+db.employee.find(
+  { Address: { $elemMatch: { city: "Pune", Pin_code: "411001" } } },
+  { _id: 0, Emp_id: 1, "Name.FName": 1, Company_name: 1, Address: 1 }
+)
+
+
+
+4)
+
+
+db.employee.find(
+  { Designation: { $in: ["Developer", "Tester"] } },
+  { _id: 0, Emp_id: 1, "Name.FName": 1, Designation: 1, Company_name: 1 }
+)
+
+
+5)
+
+db.employee.deleteOne({ Designation: "Developer" })
+
+
+6)
+
+db.employee.countDocuments()
+

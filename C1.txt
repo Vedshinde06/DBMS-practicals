@@ -1,0 +1,123 @@
+
+Write a program to implement MongoDB database connectivity with PHP 
+/python /Java Implement Database navigation CRUD operations (add, 
+delete, edit etc.) 
+
+
+pip install pymongo
+
+
+from pymongo import MongoClient
+
+# -------------------------------
+# 1️⃣ CONNECT TO MONGODB
+# -------------------------------
+try:
+    client = MongoClient("mongodb://localhost:27017/")
+    db = client["companyDB"]           # Database
+    collection = db["employee"]        # Collection
+    print("✅ Connected to MongoDB successfully!\n")
+except Exception as e:
+    print("❌ Connection failed:", e)
+    exit()
+
+
+# -------------------------------
+# 2️⃣ FUNCTIONS FOR CRUD
+# -------------------------------
+
+def add_employee():
+    emp_id = int(input("Enter Employee ID: "))
+    fname = input("Enter First Name: ")
+    lname = input("Enter Last Name: ")
+    company = input("Enter Company Name: ")
+    salary = float(input("Enter Salary: "))
+    designation = input("Enter Designation: ")
+
+    emp = {
+        "Emp_id": emp_id,
+        "Name": {"FName": fname, "LName": lname},
+        "Company_name": company,
+        "Salary": salary,
+        "Designation": designation
+    }
+
+    collection.insert_one(emp)
+    print("🎉 Employee added successfully!\n")
+
+
+def show_all():
+    print("\n📋 Employee Records:")
+    for emp in collection.find({}, {"_id": 0}):
+        print(emp)
+    print()
+
+
+def update_salary():
+    emp_id = int(input("Enter Employee ID to update salary: "))
+    new_salary = float(input("Enter new salary: "))
+
+    result = collection.update_one(
+        {"Emp_id": emp_id},
+        {"$set": {"Salary": new_salary}}
+    )
+
+    if result.modified_count > 0:
+        print("✅ Salary updated successfully!\n")
+    else:
+        print("⚠️ Employee not found.\n")
+
+
+def delete_employee():
+    emp_id = int(input("Enter Employee ID to delete: "))
+
+    result = collection.delete_one({"Emp_id": emp_id})
+    if result.deleted_count > 0:
+        print("🗑️ Employee deleted successfully!\n")
+    else:
+        print("⚠️ Employee not found.\n")
+
+
+# -------------------------------
+# 3️⃣ MENU-DRIVEN INTERFACE
+# -------------------------------
+while True:
+    print("===== MONGO CRUD MENU =====")
+    print("1. Add Employee")
+    print("2. View Employees")
+    print("3. Update Employee Salary")
+    print("4. Delete Employee")
+    print("5. Exit")
+
+    choice = input("Enter choice (1-5): ")
+
+    if choice == '1':
+        add_employee()
+    elif choice == '2':
+        show_all()
+    elif choice == '3':
+        update_salary()
+    elif choice == '4':
+        delete_employee()
+    elif choice == '5':
+        print("👋 Exiting Program...")
+        break
+    else:
+        print("❌ Invalid choice! Please try again.\n")
+
+
+python mongo_crud.py
+
+
+use companyDB
+db.employee.find().pretty()
+
+
+
+{
+    "Emp_id": 101,
+    "Name": { "FName": "Vedant", "LName": "Shinde" },
+    "Company_name": "Infosys",
+    "Salary": 55000,
+    "Designation": "Developer"
+}
