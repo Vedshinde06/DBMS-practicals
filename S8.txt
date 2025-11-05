@@ -1,0 +1,111 @@
+
+Consider following Relation: 
+Companies (comp_id, name, cost, year) 
+Orders (comp_id, domain, quantity) 
+Execute the following query: 
+1. Find names, costs, domains and quantities for companies using 
+inner join. 
+2. Find names, costs, domains and quantities for companies using 
+left outer join. 
+3. Find names, costs, domains and quantities for companies using 
+right outer join. 
+4. Find names, costs, domains and quantities for companies using 
+Union operator. 
+5. Create View View1 by selecting both tables to show company name 
+and quantities. 
+6. Create View View2 by selecting any two columns and perform 
+insert update delete operations. 
+7. Display content of View1, View2. 
+
+
+CREATE TABLE Companies (
+    comp_id INT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    cost DECIMAL(10,2) CHECK (cost > 0),
+    year INT CHECK (year >= 2000)
+);
+
+CREATE TABLE Orders (
+    comp_id INT,
+    domain VARCHAR(50) NOT NULL,
+    quantity INT CHECK (quantity > 0),
+    FOREIGN KEY (comp_id) REFERENCES Companies(comp_id)
+);
+
+
+INSERT INTO Companies VALUES
+(1, 'Google', 25000, 2020),
+(2, 'Microsoft', 30000, 2021),
+(3, 'Amazon', 20000, 2022),
+(4, 'Infosys', 15000, 2021),
+(5, 'TechM', 10000, 2020);
+
+INSERT INTO Orders VALUES
+(1, 'AI', 10),
+(2, 'Cloud', 20),
+(3, 'E-Commerce', 15),
+(5, 'Cybersecurity', 8);
+
+
+1)
+
+SELECT C.name, C.cost, O.domain, O.quantity
+FROM Companies C
+INNER JOIN Orders O ON C.comp_id = O.comp_id;
+
+
+2)
+
+SELECT C.name, C.cost, O.domain, O.quantity
+FROM Companies C
+LEFT JOIN Orders O ON C.comp_id = O.comp_id;
+
+3)
+
+SELECT C.name, C.cost, O.domain, O.quantity
+FROM Companies C
+RIGHT JOIN Orders O ON C.comp_id = O.comp_id;
+
+4)
+
+SELECT C.name, C.cost, O.domain, O.quantity
+FROM Companies C
+LEFT JOIN Orders O ON C.comp_id = O.comp_id
+UNION
+SELECT C.name, C.cost, O.domain, O.quantity
+FROM Companies C
+RIGHT JOIN Orders O ON C.comp_id = O.comp_id;
+
+5)
+
+CREATE VIEW View1 AS
+SELECT C.name AS company_name, O.quantity
+FROM Companies C
+LEFT JOIN Orders O ON C.comp_id = O.comp_id;
+
+SELECT * FROM View1;
+
+6)
+
+CREATE VIEW View2 AS
+SELECT comp_id, name FROM Companies;
+
+-- View content
+SELECT * FROM View2;
+
+-- INSERT through view
+INSERT INTO View2 VALUES (6, 'TCS');
+
+-- UPDATE through view
+UPDATE View2 SET name = 'Tech Mahindra' WHERE comp_id = 5;
+
+-- DELETE through view
+DELETE FROM View2 WHERE comp_id = 6;
+
+7)
+
+SELECT * FROM View1;
+SELECT * FROM View2;
+
+
+

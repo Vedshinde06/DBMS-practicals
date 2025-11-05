@@ -1,0 +1,101 @@
+ 
+SQL Queries 
+Create following tables with suitable constraints. Insert data and 
+solve the following queries: 
+CUSTOMERS(CNo, Cname, Ccity, CMobile) 
+ITEMS(INo, Iname, Itype, Iprice, Icount) 
+PURCHASE(PNo, Pdate, Pquantity, Cno, INo) 
+1. List all stationary items with price between 400/- to 1000/- 
+2. Change the mobile number of customer “Gopal” 
+3. Display the item with maximum price 
+4. Display all purchases sorted from the most recent to the oldest 
+5. Count the number of customers in every city 
+6. Display all purchased quantity of Customer Maya 
+7. Create view which shows Iname, Price and Count of all stationary 
+items in descending order of price. 
+
+
+CREATE TABLE CUSTOMERS (
+    CNo INT PRIMARY KEY,
+    Cname VARCHAR(50) NOT NULL,
+    Ccity VARCHAR(50),
+    CMobile VARCHAR(15) UNIQUE
+);
+
+CREATE TABLE ITEMS (
+    INo INT PRIMARY KEY,
+    Iname VARCHAR(50) NOT NULL,
+    Itype VARCHAR(30),
+    Iprice DECIMAL(10,2) CHECK (Iprice > 0),
+    Icount INT CHECK (Icount >= 0)
+);
+
+CREATE TABLE PURCHASE (
+    PNo INT PRIMARY KEY,
+    Pdate DATE NOT NULL,
+    Pquantity INT CHECK (Pquantity > 0),
+    CNo INT,
+    INo INT,
+    FOREIGN KEY (CNo) REFERENCES CUSTOMERS(CNo),
+    FOREIGN KEY (INo) REFERENCES ITEMS(INo)
+);
+
+
+-- Customers
+INSERT INTO CUSTOMERS VALUES
+(1, 'Maya', 'Pune', '9876543210'),
+(2, 'Gopal', 'Mumbai', '9988776655'),
+(3, 'Sneha', 'Pune', '9090909090'),
+(4, 'Rohit', 'Delhi', '9123456789'),
+(5, 'Naina', 'Mumbai', '9765432109');
+
+-- Items
+INSERT INTO ITEMS VALUES
+(101, 'Notebook', 'Stationary', 550, 100),
+(102, 'Pen', 'Stationary', 50, 500),
+(103, 'Pencil', 'Stationary', 20, 1000),
+(104, 'Bag', 'Accessories', 850, 150),
+(105, 'Mouse', 'Electronics', 700, 75),
+(106, 'Marker', 'Stationary', 450, 200);
+
+-- Purchases
+INSERT INTO PURCHASE VALUES
+(201, '2024-12-01', 10, 1, 101),
+(202, '2024-12-03', 2, 2, 105),
+(203, '2024-12-05', 5, 3, 106),
+(204, '2024-12-07', 8, 1, 102),
+(205, '2024-12-08', 3, 4, 104),
+(206, '2024-12-09', 6, 5, 101);
+
+
+1) 
+
+SELECT Iname, Iprice
+FROM ITEMS
+WHERE Itype = 'Stationary' AND Iprice BETWEEN 400 AND 1000;
+
+2)
+
+UPDATE CUSTOMERS
+SET CMobile = '9999999999'
+WHERE Cname = 'Gopal';
+
+3)
+
+SELECT Iname, Iprice
+FROM ITEMS
+WHERE Iprice = (SELECT MAX(Iprice) FROM ITEMS);
+
+4)
+
+SELECT * 
+FROM PURCHASE
+ORDER BY Pdate DESC;
+
+5)
+
+SELECT Ccity, COUNT(*) AS Total_Customers
+FROM CUSTOMERS
+GROUP BY Ccity;
+
+

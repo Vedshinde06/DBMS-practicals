@@ -1,0 +1,61 @@
+Create a stored function titled 'Age_calc'. 
+Accept the date of birth of a person as a parameter. 
+Calculate the age of the person in years, months and days e.g. 3 
+years, 2months, 10 days. 
+Return the age in years directly (with the help of Return 
+statement). The months and days are to be returned indirectly in 
+the form of OUT parameters.
+
+
+DELIMITER //
+
+
+CREATE PROCEDURE Age_calc (
+    IN p_dob DATE,
+    OUT p_years INT,
+    OUT p_months INT,
+    OUT p_days INT
+)
+BEGIN
+    DECLARE v_today DATE DEFAULT CURDATE();
+
+    -- Calculate years
+    SET p_years = TIMESTAMPDIFF(YEAR, p_dob, v_today);
+
+    -- Calculate months (remaining after years)
+    SET p_months = TIMESTAMPDIFF(MONTH, DATE_ADD(p_dob, INTERVAL p_years YEAR), v_today);
+
+    -- Calculate days (remaining after months)
+    SET p_days = TIMESTAMPDIFF(DAY, DATE_ADD(DATE_ADD(p_dob, INTERVAL p_years YEAR), INTERVAL p_months MONTH), v_today);
+END;
+//
+
+DELIMITER ;
+
+
+CALL Age_calc('2005-09-15', @yrs, @mons, @days);
+
+
+SELECT CONCAT(@yrs, ' years, ', @mons, ' months, ', @days, ' days') AS Age;
+
+
+
+
+
+
+DELIMITER //
+
+CREATE FUNCTION Age_calc(p_dob DATE)
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE v_years INT;
+    SET v_years = TIMESTAMPDIFF(YEAR, p_dob, CURDATE());
+    RETURN v_years;
+END;
+//
+
+DELIMITER ;
+
+SELECT Age_calc('2005-09-15') AS Years;
+

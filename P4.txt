@@ -1,0 +1,69 @@
+
+Write a PL/SQL block for following requirements and handle the 
+exceptions. Roll no. of students will be entered by the user. 
+Attendance of roll no. entered by user will be checked in the Stud 
+table. If attendance is less than 75% then display the message 
+“Term not granted” and set the status in stud table as “Detained”. 
+Otherwise display message “Term granted” and set the status in stud 
+table as “Not Detained”. Student (Roll, Name, Attendance, Status) 
+
+
+CREATE TABLE Stud (
+    Roll INT PRIMARY KEY,
+    Name VARCHAR(50),
+    Attendance DECIMAL(5,2),
+    Status VARCHAR(20)
+);
+
+
+INSERT INTO Stud VALUES
+(101, 'Vedant Shinde', 82.5, NULL),
+(102, 'Neha Patil', 65.0, NULL),
+(103, 'Amit Joshi', 90.0, NULL),
+(104, 'Rohit Kale', 70.0, NULL);
+
+
+DELIMITER //
+
+CREATE PROCEDURE CheckAttendance(IN p_roll INT)
+BEGIN
+    DECLARE v_attendance DECIMAL(5,2);
+    DECLARE v_exists INT DEFAULT 0;
+
+    -- Check if student exists
+    SELECT COUNT(*) INTO v_exists
+    FROM Stud
+    WHERE Roll = p_roll;
+
+    IF v_exists = 0 THEN
+        SELECT CONCAT('No student found with Roll No ', p_roll) AS Message;
+    ELSE
+        -- Fetch attendance
+        SELECT Attendance INTO v_attendance
+        FROM Stud
+        WHERE Roll = p_roll;
+
+        -- Check and update status
+        IF v_attendance < 75 THEN
+            UPDATE Stud SET Status = 'Detained' WHERE Roll = p_roll;
+            SELECT 'Term not granted. Student is Detained.' AS Message;
+        ELSE
+            UPDATE Stud SET Status = 'Not Detained' WHERE Roll = p_roll;
+            SELECT 'Term granted. Student is Not Detained.' AS Message;
+        END IF;
+    END IF;
+END;
+//
+
+DELIMITER ;
+
+
+
+
+CALL CheckAttendance(102);
+
+
+
+
+SELECT * FROM Stud;
+

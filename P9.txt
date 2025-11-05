@@ -1,0 +1,62 @@
+Trigger: Create a row level trigger for the CUSTOMERS table that 
+would fire INSERT or UPDATE or DELETE operations performed on the 
+CUSTOMERS table. This trigger will display the salary difference 
+between the old values and new values.
+
+
+CREATE TABLE CUSTOMERS (
+    Cust_ID INT PRIMARY KEY AUTO_INCREMENT,
+    Cust_Name VARCHAR(50),
+    Salary DECIMAL(10,2)
+);
+
+
+INSERT INTO CUSTOMERS (Cust_Name, Salary) VALUES
+('Vedant Shinde', 25000),
+('Neha Patil', 30000),
+('Amit Joshi', 27000);
+
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_customer_changes
+AFTER INSERT ON CUSTOMERS
+FOR EACH ROW
+BEGIN
+    SELECT CONCAT('New record inserted for ', NEW.Cust_Name, 
+                  ' with salary Rs ', NEW.Salary) AS Message;
+END;
+//
+
+CREATE TRIGGER trg_customer_update
+AFTER UPDATE ON CUSTOMERS
+FOR EACH ROW
+BEGIN
+    DECLARE diff DECIMAL(10,2);
+    SET diff = NEW.Salary - OLD.Salary;
+
+    SELECT CONCAT('Salary updated for ', NEW.Cust_Name,
+                  '. Difference: Rs ', diff) AS Message;
+END;
+//
+
+CREATE TRIGGER trg_customer_delete
+AFTER DELETE ON CUSTOMERS
+FOR EACH ROW
+BEGIN
+    SELECT CONCAT('Record deleted for ', OLD.Cust_Name,
+                  ' who had salary Rs ', OLD.Salary) AS Message;
+END;
+//
+
+DELIMITER ;
+
+
+INSERT INTO CUSTOMERS (Cust_Name, Salary) VALUES ('Rohit Kale', 35000);
+
+
+UPDATE CUSTOMERS SET Salary = 40000 WHERE Cust_ID = 2;
+
+
+DELETE FROM CUSTOMERS WHERE Cust_ID = 3;

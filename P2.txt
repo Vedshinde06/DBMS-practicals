@@ -1,0 +1,99 @@
+Write an Unnamed PL/SQL of code for the following requirements: - 
+Schema: 
+Borrower (Rollin, Name, DateofIssue, NameofBook, Status) 
+Fine (Roll_no,Date,Amt) 
+Accept roll_no & name of book from user. 
+Check the number of days (from date of issue). 
+1. If days are between 15 to 30 then fine amounts will be Rs 5 per 
+day. 
+2. If no. of days>30, per day fine will be Rs 50 per day & for days 
+less than 30, Rs. 5 per day. 
+3. After submitting the book, status will change from I to R. 
+4. If condition of fine is true, then details will be stored into 
+fine table.
+
+
+CREATE TABLE Borrower (
+    Roll_no INT PRIMARY KEY,
+    Name VARCHAR(50),
+    DateOfIssue DATE,
+    NameOfBook VARCHAR(100),
+    Status CHAR(1) -- 'I' = Issued, 'R' = Returned
+);
+
+CREATE TABLE Fine (
+    Roll_no INT,
+    FineDate DATE,
+    Amt DECIMAL(10,2)
+);
+
+
+INSERT INTO Borrower VALUES
+(101, 'Vedant Shinde', '2025-10-01', 'DBMS Concepts', 'I'),
+(102, 'Neha Patil', '2025-10-20', 'Python Basics', 'I'),
+(103, 'Rohit Kale', '2025-11-01', 'AI Fundamentals', 'I');
+
+
+DELIMITER //
+
+CREATE PROCEDURE ReturnBook(IN p_roll INT, IN p_book VARCHAR(100))
+BEGIN
+    DECLARE v_date_issue DATE;
+    DECLARE v_days INT;
+    DECLARE v_fine DECIMAL(10,2) DEFAULT 0;
+    DECLARE v_exists INT DEFAULT 0;
+
+    -- 1️⃣ Check if record exists
+    SELECT COUNT(*) INTO v_exists
+    FROM Borrower
+    WHERE Roll_no = p_roll AND NameOfBook = p_book AND Status = 'I';
+
+    IF v_exists = 0 THEN
+        SELECT 'No matching record found for this Roll No or Book (or already returned).' AS Message;
+    ELSE
+        -- 2️⃣ Get date of issue
+        SELECT DateOfIssue INTO v_date_issue
+        FROM Borrower
+        WHERE Roll_no = p_roll AND NameOfBook = p_book;
+
+        -- 3️⃣ Calculate number of days between today and issue date
+        SET v_days = DATEDIFF(CURDATE(), v_date_issue);
+
+        -- 4️⃣ Fine calculation logic
+        IF v_days BETWEEN 15 AND 30 THEN
+            SET v_fine = (v_days - 14) * 5;
+        ELSEIF v_days > 30 THEN
+            SET v_fine = (16 * 5) + ((v_days - 30) * 50);
+        ELSE
+            SET v_fine = 0;
+        END IF;
+
+        -- 5️⃣ Update Borrower status to Returned (R)
+        UPDATE Borrower
+        SET Status = 'R'
+        WHERE Roll_no = p_roll AND NameOfBook = p_book;
+
+        -- 6️⃣ If fine exists, insert into Fine table
+        IF v_fine > 0 THEN
+            INSERT INTO Fine (Roll_no, FineDate, Amt)
+            VALUES (p_roll, CURDATE(), v_fine);
+            SELECT CONCAT('Fine of Rs ', v_fine, ' applied.') AS Message;
+        ELSE
+            SELECT 'No fine applicable.' AS Message;
+        END IF;
+
+        SELECT 'Book Returned Successfully!' AS Message;
+    END IF;
+END;
+//
+
+DELIMITER ;
+
+
+CALL ReturnBook(101, 'DBMS Concepts');
+
+
+SELECT * FROM Borrower;
+
+
+SELECT * FROM Fine;

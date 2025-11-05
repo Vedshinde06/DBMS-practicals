@@ -1,0 +1,117 @@
+
+Write a Row Level Before and After Trigger on Library table. The 
+System should keep track of the records that are being updated or 
+deleted. The old value of updated or deleted records should be 
+added in Library_Audit table. 
+
+
+CREATE TABLE Library (
+    Book_ID INT PRIMARY KEY AUTO_INCREMENT,
+    Book_Name VARCHAR(100),
+    Author VARCHAR(100),
+    Price DECIMAL(10,2),
+    Quantity INT
+);
+
+
+CREATE TABLE Library_Audit (
+    Audit_ID INT PRIMARY KEY AUTO_INCREMENT,
+    Book_ID INT,
+    Book_Name VARCHAR(100),
+    Author VARCHAR(100),
+    Price DECIMAL(10,2),
+    Quantity INT,
+    Action_Type VARCHAR(20),
+    Action_Time DATETIME
+);
+
+
+INSERT INTO Library (Book_Name, Author, Price, Quantity) VALUES
+('DBMS Concepts', 'Elmasri', 500.00, 10),
+('AI Fundamentals', 'Russell', 650.00, 5),
+('Python Basics', 'Mark Lutz', 450.00, 7);
+
+
+
+Before Update Trigger
+
+This trigger fires before a record is updated — it captures the old values.
+
+DELIMITER //
+
+CREATE TRIGGER before_library_update
+BEFORE UPDATE ON Library
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (Book_ID, Book_Name, Author, Price, Quantity, Action_Type, Action_Time)
+    VALUES (OLD.Book_ID, OLD.Book_Name, OLD.Author, OLD.Price, OLD.Quantity, 'BEFORE UPDATE', NOW());
+END;
+//
+
+
+
+Before Delete Trigger
+
+This trigger fires before a record is deleted — it captures the old data before deletion.
+
+CREATE TRIGGER before_library_delete
+BEFORE DELETE ON Library
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (Book_ID, Book_Name, Author, Price, Quantity, Action_Type, Action_Time)
+    VALUES (OLD.Book_ID, OLD.Book_Name, OLD.Author, OLD.Price, OLD.Quantity, 'BEFORE DELETE', NOW());
+END;
+//
+
+
+
+After Update Trigger
+
+This fires after the record is updated — you can log confirmation or new data if desired.
+
+CREATE TRIGGER after_library_update
+AFTER UPDATE ON Library
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (Book_ID, Book_Name, Author, Price, Quantity, Action_Type, Action_Time)
+    VALUES (NEW.Book_ID, NEW.Book_Name, NEW.Author, NEW.Price, NEW.Quantity, 'AFTER UPDATE', NOW());
+END;
+//
+
+
+
+After Delete Trigger
+
+Logs confirmation after deletion.
+
+CREATE TRIGGER after_library_delete
+AFTER DELETE ON Library
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (Book_ID, Book_Name, Author, Price, Quantity, Action_Type, Action_Time)
+    VALUES (OLD.Book_ID, OLD.Book_Name, OLD.Author, OLD.Price, OLD.Quantity, 'AFTER DELETE', NOW());
+END;
+//
+
+DELIMITER ;
+
+
+
+Update Example
+
+UPDATE Library
+SET Price = 700.00, Quantity = 4
+WHERE Book_ID = 2;
+
+
+Delete Example
+
+DELETE FROM Library
+WHERE Book_ID = 3;
+
+
+SELECT * FROM Library_Audit;
+
+
+
+

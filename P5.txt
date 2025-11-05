@@ -1,0 +1,84 @@
+
+Write a PL/SQL Block to increase the salary of employees by 10% of 
+existing salary, who are having salary less than average salary of 
+organization, whenever such salary updates take place, a record for 
+same is maintained in the increment_salary table. 
+emp(emp_no, salary) 
+increment_salary(emp_no, salary)
+
+
+CREATE TABLE emp (
+    emp_no INT PRIMARY KEY,
+    salary DECIMAL(10,2)
+);
+
+CREATE TABLE increment_salary (
+    emp_no INT,
+    salary DECIMAL(10,2)
+);
+
+
+
+INSERT INTO emp VALUES
+(101, 20000),
+(102, 35000),
+(103, 25000),
+(104, 40000),
+(105, 18000);
+
+
+
+DELIMITER //
+
+CREATE PROCEDURE UpdateSalaryBelowAverage()
+BEGIN
+    DECLARE v_avg_salary DECIMAL(10,2);
+    DECLARE done INT DEFAULT 0;
+    DECLARE v_emp_no INT;
+    DECLARE v_salary DECIMAL(10,2);
+
+    -- Cursor for employees below average salary
+    DECLARE cur CURSOR FOR
+        SELECT emp_no, salary FROM emp WHERE salary < v_avg_salary;
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    --  Find average salary
+    SELECT AVG(salary) INTO v_avg_salary FROM emp;
+
+    -- Open cursor after average salary is known
+    OPEN cur;
+
+    read_loop: LOOP
+        FETCH cur INTO v_emp_no, v_salary;
+        IF done = 1 THEN
+            LEAVE read_loop;
+        END IF;
+
+        --  Increase salary by 10%
+        SET v_salary = v_salary * 1.10;
+
+        UPDATE emp SET salary = v_salary WHERE emp_no = v_emp_no;
+
+        --  Insert updated record into increment_salary table
+        INSERT INTO increment_salary (emp_no, salary)
+        VALUES (v_emp_no, v_salary);
+
+    END LOOP;
+
+    CLOSE cur;
+
+    SELECT 'Salary updated and recorded successfully.' AS Message;
+END;
+//
+
+DELIMITER ;
+
+
+CALL UpdateSalaryBelowAverage();
+
+
+SELECT * FROM emp;
+
+
+SELECT * FROM increment_salary;

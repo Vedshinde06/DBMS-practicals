@@ -1,0 +1,124 @@
+Consider following Relation 
+Employee(emp_id,employee_name,street,city) 
+Works(employee_name,company_name,salary) 
+Company(company_name,city) 
+Manages(employee_name,manager_name) 
+Create above tables with appropriate constraints like primary key, 
+foreign key, not null etc. 
+1. Change the city of employee working with InfoSys to ‘Bangalore’ 
+2. Find the names of all employees who earn more than the average 
+salary of all employees of their company. Assume that all people 
+work for at most one company. 
+3. Find the names, street address, and cities of residence for all 
+employees who work for 'TechM' and earn more than $10,000. 
+4. Change name of table Manages to Management. 
+5. Create Simple and Unique index on employee table. 
+6. Display index Information 
+
+CREATE TABLE Employee (
+    emp_id INT PRIMARY KEY,
+    employee_name VARCHAR(50) NOT NULL UNIQUE,
+    street VARCHAR(100),
+    city VARCHAR(50)
+);
+
+CREATE TABLE Company (
+    company_name VARCHAR(50) PRIMARY KEY,
+    city VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE Works (
+    emp_id INT NOT NULL,
+    company_name VARCHAR(50) NOT NULL,
+    salary DECIMAL(10,2) CHECK (salary > 0),
+    PRIMARY KEY (emp_id),
+    FOREIGN KEY (emp_id) REFERENCES Employee(emp_id),
+    FOREIGN KEY (company_name) REFERENCES Company(company_name)
+);
+
+CREATE TABLE Manages (
+    emp_id INT PRIMARY KEY,
+    manager_id INT,
+    FOREIGN KEY (emp_id) REFERENCES Employee(emp_id),
+    FOREIGN KEY (manager_id) REFERENCES Employee(emp_id)
+);
+
+-- Employee
+INSERT INTO Employee VALUES
+(101, 'Amit Joshi', 'FC Road', 'Pune'),
+(102, 'Neha Patil', 'MG Road', 'Mumbai'),
+(103, 'Ravi Kumar', 'BTM Layout', 'Bangalore'),
+(104, 'Sneha Desai', 'JM Road', 'Pune'),
+(105, 'Karan Mehta', 'Viman Nagar', 'Pune'),
+(106, 'Pooja Nair', 'Indira Nagar', 'Hyderabad');
+
+-- Company
+INSERT INTO Company VALUES
+('TCS', 'Pune'),
+('InfoSys', 'Hyderabad'),
+('TechM', 'Bangalore'),
+('Wipro', 'Chennai');
+
+-- Works
+INSERT INTO Works VALUES
+(101, 'TCS', 8500),
+(102, 'InfoSys', 9500),
+(103, 'TechM', 12000),
+(104, 'TechM', 11000),
+(105, 'Wipro', 7000),
+(106, 'InfoSys', 12500);
+
+-- Manages
+INSERT INTO Manages VALUES
+(101, 102),
+(102, 103),
+(103, NULL),
+(104, 103),
+(105, 101),
+(106, 102);
+
+
+1) 
+
+UPDATE Employee
+SET city = 'Bangalore'
+WHERE emp_id IN (
+    SELECT emp_id
+    FROM Works
+    WHERE company_name = 'InfoSys'
+);
+
+2)
+
+SELECT E.employee_name, W.company_name, W.salary
+FROM Employee E
+JOIN Works W ON E.emp_id = W.emp_id
+WHERE W.salary > (
+    SELECT AVG(W2.salary)
+    FROM Works W2
+    WHERE W2.company_name = W.company_name
+);
+
+3)
+
+SELECT E.employee_name, E.street, E.city
+FROM Employee E
+JOIN Works W ON E.emp_id = W.emp_id
+WHERE W.company_name = 'TechM' AND W.salary > 10000;
+
+4) 
+
+RENAME TABLE Manages TO Management;
+
+5)
+
+-- Simple index on city
+CREATE INDEX idx_city ON Employee(city);
+
+-- Unique index on employee_name (already unique, but shown for syntax)
+CREATE UNIQUE INDEX idx_empname ON Employee(employee_name);
+
+6)
+
+SHOW INDEX FROM Employee;
+

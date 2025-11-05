@@ -1,0 +1,131 @@
+SQL Queries: 
+Create following tables with suitable constraints (primary key, 
+foreign key, not null etc). 
+Insert record and solve the following queries: 
+Create table Cust_Master(Cust_no, Cust_name, Cust_addr) 
+Create table Order(Order_no, Cust_no, Order_date, Qty_Ordered) 
+Create Product (Product_no, Product_name, Order_no) 
+1. List names of customers having 'A' as second letter in their 
+name. 
+2. Display order from Customer no C1002, C1005, C1007 and C1008 
+3. List Clients who stay in either 'Banglore or 'Manglore' 
+4. Display name of customers& the product_name they have purchase 
+5. Create view View1 consisting of Cust_name, Product_name. 
+6. Disply product_name and quantity purchase by each customer 
+7. Perform different joint operation.
+
+CREATE TABLE Cust_Master (
+    Cust_no VARCHAR(10) PRIMARY KEY,
+    Cust_name VARCHAR(50) NOT NULL,
+    Cust_addr VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE Orders (
+    Order_no VARCHAR(10) PRIMARY KEY,
+    Cust_no VARCHAR(10) NOT NULL,
+    Order_date DATE NOT NULL,
+    Qty_Ordered INT CHECK (Qty_Ordered > 0),
+    FOREIGN KEY (Cust_no) REFERENCES Cust_Master(Cust_no)
+);
+
+CREATE TABLE Product (
+    Product_no VARCHAR(10) PRIMARY KEY,
+    Product_name VARCHAR(50) NOT NULL,
+    Order_no VARCHAR(10) NOT NULL,
+    FOREIGN KEY (Order_no) REFERENCES Orders(Order_no)
+);
+
+-- Customers
+INSERT INTO Cust_Master VALUES
+('C1001', 'Amit Joshi', 'Pune'),
+('C1002', 'Ravi Kumar', 'Banglore'),
+('C1003', 'Karan Mehta', 'Mumbai'),
+('C1004', 'Pavan Patil', 'Manglore'),
+('C1005', 'Naina Desai', 'Banglore'),
+('C1006', 'Sanjay Rao', 'Chennai'),
+('C1007', 'Ananya Shah', 'Manglore'),
+('C1008', 'Kavya Nair', 'Hyderabad');
+
+-- Orders
+INSERT INTO Orders VALUES
+('O2001', 'C1001', '2024-10-12', 3),
+('O2002', 'C1002', '2024-11-15', 2),
+('O2003', 'C1003', '2024-12-05', 5),
+('O2004', 'C1005', '2024-12-10', 1),
+('O2005', 'C1007', '2024-12-11', 4),
+('O2006', 'C1008', '2024-12-12', 6);
+
+-- Products
+INSERT INTO Product VALUES
+('P3001', 'Laptop', 'O2001'),
+('P3002', 'Mobile', 'O2002'),
+('P3003', 'Tablet', 'O2003'),
+('P3004', 'Smartwatch', 'O2004'),
+('P3005', 'Monitor', 'O2005'),
+('P3006', 'Keyboard', 'O2006');
+
+1)
+
+SELECT Cust_name
+FROM Cust_Master
+WHERE Cust_name LIKE '_A%';
+
+2)
+
+SELECT *
+FROM Orders
+WHERE Cust_no IN ('C1002', 'C1005', 'C1007', 'C1008');
+
+3)
+
+SELECT Cust_name, Cust_addr
+FROM Cust_Master
+WHERE Cust_addr IN ('Banglore', 'Manglore');
+
+4)
+
+SELECT C.Cust_name, P.Product_name
+FROM Cust_Master C
+JOIN Orders O ON C.Cust_no = O.Cust_no
+JOIN Product P ON O.Order_no = P.Order_no;
+
+5)
+
+CREATE VIEW View1 AS
+SELECT C.Cust_name, P.Product_name
+FROM Cust_Master C
+JOIN Orders O ON C.Cust_no = O.Cust_no
+JOIN Product P ON O.Order_no = P.Order_no;
+
+SELECT * FROM View1;
+
+6)
+
+SELECT C.Cust_name, P.Product_name, O.Qty_Ordered
+FROM Cust_Master C
+JOIN Orders O ON C.Cust_no = O.Cust_no
+JOIN Product P ON O.Order_no = P.Order_no;
+
+7)
+
+SELECT C.Cust_name, P.Product_name
+FROM Cust_Master C
+INNER JOIN Orders O ON C.Cust_no = O.Cust_no
+INNER JOIN Product P ON O.Order_no = P.Order_no;
+
+
+SELECT C.Cust_name, O.Order_no
+FROM Cust_Master C
+LEFT JOIN Orders O ON C.Cust_no = O.Cust_no;
+
+SELECT C.Cust_name, O.Order_no
+FROM Cust_Master C
+RIGHT JOIN Orders O ON C.Cust_no = O.Cust_no;
+
+SELECT C.Cust_name, O.Order_no
+FROM Cust_Master C
+LEFT JOIN Orders O ON C.Cust_no = O.Cust_no
+UNION
+SELECT C.Cust_name, O.Order_no
+FROM Cust_Master C
+RIGHT JOIN Orders O ON C.Cust_no = O.Cust_no;

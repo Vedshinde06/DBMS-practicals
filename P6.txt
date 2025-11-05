@@ -1,0 +1,88 @@
+
+Write a Stored Procedure namely proc_Grade for the categorization 
+of student. If marks scored by students in examination is <=1500 
+and marks>=990 then student will be placed in distinction category 
+if marks scored are between 989 and 900 categories is first class, 
+if marks 899 and 825 category is Higher Second Class. 
+Write a PL/SQL block for using procedure created with above 
+requirement. 
+Stud_Marks(name, total_marks), 
+Result (Roll,Name, Class) 
+
+
+CREATE TABLE Stud_Marks (
+    Roll INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(50),
+    Total_Marks INT
+);
+
+CREATE TABLE Result (
+    Roll INT,
+    Name VARCHAR(50),
+    Class VARCHAR(30)
+);
+
+
+INSERT INTO Stud_Marks (Name, Total_Marks) VALUES
+('Vedant Shinde', 1450),
+('Neha Patil', 980),
+('Amit Joshi', 870),
+('Sneha Desai', 820),
+('Rohit Kale', 750);
+
+
+DELIMITER //
+
+CREATE PROCEDURE proc_Grade()
+BEGIN
+    DECLARE v_roll INT;
+    DECLARE v_name VARCHAR(50);
+    DECLARE v_marks INT;
+    DECLARE v_class VARCHAR(30);
+    DECLARE done INT DEFAULT 0;
+
+    -- Cursor to read all students
+    DECLARE cur CURSOR FOR 
+        SELECT Roll, Name, Total_Marks FROM Stud_Marks;
+
+    -- Exit handler for cursor completion
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    -- Open cursor
+    OPEN cur;
+
+    read_loop: LOOP
+        FETCH cur INTO v_roll, v_name, v_marks;
+        IF done = 1 THEN 
+            LEAVE read_loop;
+        END IF;
+
+        -- Determine class based on marks
+        IF v_marks BETWEEN 990 AND 1500 THEN
+            SET v_class = 'Distinction';
+        ELSEIF v_marks BETWEEN 900 AND 989 THEN
+            SET v_class = 'First Class';
+        ELSEIF v_marks BETWEEN 825 AND 899 THEN
+            SET v_class = 'Higher Second Class';
+        ELSE
+            SET v_class = 'Fail';
+        END IF;
+
+        -- Insert result into Result table
+        INSERT INTO Result (Roll, Name, Class)
+        VALUES (v_roll, v_name, v_class);
+    END LOOP;
+
+    CLOSE cur;
+
+    SELECT 'Grades successfully assigned and inserted into Result table.' AS Message;
+END;
+//
+
+DELIMITER ;
+
+
+CALL proc_Grade();
+
+
+SELECT * FROM Result;
